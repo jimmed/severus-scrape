@@ -1,0 +1,7 @@
+{
+  "name": "scrapegoat",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Jim O'Brien <jim@jimmed.net>",
+  "license": "MIT"
+}
