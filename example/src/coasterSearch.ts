@@ -1,7 +1,17 @@
 import { basename } from "path";
 import { UrlWithParsedQuery } from "url";
 import { parse as parseDate } from "date-fns";
-import { page, scrape } from "scrapegoat";
+import {
+  page,
+  section,
+  int,
+  list,
+  tuple,
+  exists,
+  url,
+  text,
+  attr
+} from "../../src/";
 
 export type Args = {
   query: string;
@@ -40,25 +50,19 @@ export const coasterSearchPage = page<Args, Results>({
     pathname: "/r.htm",
     query: { ot: "2", na: query }
   }),
-  scrape: scrape.section<Results>("main section", {
-    total: scrape.int(".t-top tbody tr:nth-child(1) td:nth-child(3)"),
-    results: scrape.list(
+  scrape: section<Results>("main section", {
+    total: int(".t-top tbody tr:nth-child(1) td:nth-child(3)"),
+    results: list(
       "#report tbody tr",
-      scrape.section<Result>(null, {
-        id: scrape.url("td:nth-child(1) a", idFromUrl),
-        name: scrape.text("td:nth-child(1)"),
-        opened: scrape.attr("td:nth-child(6) time", "datetime", parseDate),
-        hasPhotos: scrape.exists("td:nth-child(0) a"),
-        parkId: scrape.url("td:nth-child(2) a", idFromUrl),
-        park: scrape.text("td:nth-child(2) a"),
-        typeId: scrape.url("td:nth-child(3) a", idFromQuery),
-        type: scrape.text("td:nth-child(3) a"),
-        designId: scrape.url("td:nth-child(4) a", idFromQuery),
-
-        design: scrape.text("td:nth-child(4) a"),
-        statusId: scrape.url("td:nth-child(5) a", idFromQuery),
-        status: scrape.text("td:nth-child(5) a")
-      })
+      tuple<Result>("td", [
+        { hasPhotos: exists("a") },
+        { id: url("a", idFromUrl), name: text("a") },
+        { parkId: url("a", idFromUrl), park: text("a") },
+        { typeId: url("a", idFromQuery), type: text("a") },
+        { designId: url("a", idFromQuery), design: text("a") },
+        { statusId: url("a", idFromQuery), status: text("a") },
+        { opened: attr("time", "datetime", parseDate) }
+      ])
     )
   })
 });

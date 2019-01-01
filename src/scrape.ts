@@ -8,7 +8,7 @@ import { parse as parseUrl, UrlWithParsedQuery } from "url";
  * @param selector The selector for the DOM node to pass to the handler
  * @param scraper A function, which given the selected DOM node returns the result of the scraping operation
  */
-const withNode = <Result>(
+export const node = <Result>(
   selector: string | null,
   scraper: (node: Cheerio) => Result
 ) => (dom: Cheerio): Result | null => {
@@ -39,11 +39,11 @@ export type SectionFields<Result> = {
  * @param selector The selector for the DOM node to pass to each scraper
  * @param fields An object which maps from field name to a scraper function
  */
-const section = <Result extends { [key: string]: any }>(
+export const section = <Result extends { [key: string]: any }>(
   selector: string,
   fields: SectionFields<Result>
 ) =>
-  withNode(
+  node(
     selector,
     (dom: Cheerio): Result =>
       Object.keys(fields).reduce(
@@ -60,8 +60,8 @@ const section = <Result extends { [key: string]: any }>(
  * @param selector The selector for the DOM node.
  * @param trim Whether to trim the text (default: `true`)
  */
-const text = (selector: string, trim: boolean = true) =>
-  withNode(selector, node => {
+export const text = (selector: string, trim: boolean = true) =>
+  node(selector, node => {
     const text = node.text();
     return trim ? text.trim() : text;
   });
@@ -72,8 +72,8 @@ const text = (selector: string, trim: boolean = true) =>
  * @param selector The selector for the DOM node.
  * @param radix The radix to pass to `parseInt` (default: `10`)
  */
-const int = (selector: string, radix: number = 10) =>
-  withNode(selector, node => parseInt(node.text(), radix));
+export const int = (selector: string, radix: number = 10) =>
+  node(selector, node => parseInt(node.text(), radix));
 
 /**
  * Scrape an array of DOM nodes matching a selector, using another scraper.
@@ -81,7 +81,7 @@ const int = (selector: string, radix: number = 10) =>
  * @param selector The selector for the DOM nodes.
  * @param scraper A scraper to handle each matched node.
  */
-const list = <Result>(
+export const list = <Result>(
   selector: string,
   scraper: (dom: Cheerio, index: number) => Result
 ) => (dom: Cheerio): Result[] =>
@@ -93,18 +93,34 @@ const list = <Result>(
     })
     .get();
 
-const attr = <Result>(
+export const attr = <Result>(
   selector: string,
   attribute: string,
   handler: (value: string) => Result
-) => withNode(selector, node => handler(node.attr(attribute)));
+) => node(selector, node => handler(node.attr(attribute)));
 
-const url = <Result>(
+export const url = <Result>(
   selector: string,
   handler: (url: UrlWithParsedQuery) => Result
 ) => attr(selector, "href", href => handler(parseUrl(href, true)));
 
-const exists = (selector: string) => withNode(selector, node => true);
+export const exists = (selector: string) => node(selector, node => true);
+
+export const tuple = <Result>(
+  selector: string,
+  scrapers: Array<Partial<SectionFields<Result>> | null>
+) => {
+  const thisTuple = list<Partial<Result>>(selector, (node, index) =>
+    scrapers[index]
+      ? section<Partial<Result>>(null, scrapers[index])(node)
+      : null
+  );
+  return (dom: Cheerio): Result =>
+    thisTuple(dom).reduce(
+      (out, partial: Partial<Result>) => ({ ...out, ...partial }),
+      {} as Result
+    );
+};
 
 export const scrape = {
   section,
@@ -113,5 +129,6 @@ export const scrape = {
   list,
   attr,
   url,
-  exists
+  exists,
+  tuple
 };
