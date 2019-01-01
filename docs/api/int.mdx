@@ -1,0 +1,23 @@
+---
+name: int
+menu: API Reference
+route: /api/int
+---
+
+# `int`
+
+Creates a scraper which will return the inner text of the selected DOM node as an integer.
+
+## Arguments
+
+```js
+int(selector[, radix = 10])
+```
+
+### `selector` (string)
+
+The CSS selector for the DOM node to select.
+
+### `radix` (optional number)
+
+The radix (base) of the number to pass to `parseInt`.

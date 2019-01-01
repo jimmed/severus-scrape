@@ -1,0 +1,23 @@
+---
+name: text
+menu: API Reference
+route: /api/text
+---
+
+# `text`
+
+Creates a scraper which will return the inner text of the selected DOM node.
+
+## Arguments
+
+```js
+text(selector[, trim = true])
+```
+
+### `selector` (string)
+
+The CSS selector for the DOM node to select.
+
+### `trim` (optional boolean)
+
+Whether to trim any leading/trailing whitespace (`true` by default).
