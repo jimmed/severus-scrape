@@ -1,7 +1,7 @@
 import { basename } from "path";
 import { UrlWithParsedQuery } from "url";
 import { parse as parseDate } from "date-fns";
-import { page, scrape } from "../goat";
+import { page, scrape } from "scrapegoat";
 
 export type Args = {
   query: string;
@@ -9,14 +9,17 @@ export type Args = {
 
 export type Result = {
   id: string;
-  parkId: string;
-  typeId: string;
-  designId: string;
-  statusId: string;
-
   name: string;
   opened: Date;
   hasPhotos: boolean;
+  parkId: string;
+  park: string;
+  typeId: string;
+  type: string;
+  designId: string;
+  design: string;
+  statusId: string;
+  status: string;
 };
 
 export type Results = {
@@ -43,21 +46,19 @@ export const coasterSearchPage = page<Args, Results>({
       "#report tbody tr",
       scrape.section<Result>(null, {
         id: scrape.url("td:nth-child(1) a", idFromUrl),
-        parkId: scrape.url("td:nth-child(2) a", idFromUrl),
-        typeId: scrape.url("td:nth-child(3) a", idFromQuery),
-        designId: scrape.url("td:nth-child(4) a", idFromQuery),
-        statusId: scrape.url("td:nth-child(5) a", idFromQuery),
         name: scrape.text("td:nth-child(1)"),
         opened: scrape.attr("td:nth-child(6) time", "datetime", parseDate),
-        hasPhotos: scrape.exists("td:nth-child(0) a")
+        hasPhotos: scrape.exists("td:nth-child(0) a"),
+        parkId: scrape.url("td:nth-child(2) a", idFromUrl),
+        park: scrape.text("td:nth-child(2) a"),
+        typeId: scrape.url("td:nth-child(3) a", idFromQuery),
+        type: scrape.text("td:nth-child(3) a"),
+        designId: scrape.url("td:nth-child(4) a", idFromQuery),
+
+        design: scrape.text("td:nth-child(4) a"),
+        statusId: scrape.url("td:nth-child(5) a", idFromQuery),
+        status: scrape.text("td:nth-child(5) a")
       })
     )
   })
 });
-
-async function test() {
-  const thisPage = await coasterSearchPage.scrape({ query: "Nemesis" });
-  console.log(thisPage);
-}
-
-test();
