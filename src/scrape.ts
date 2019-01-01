@@ -116,8 +116,9 @@ export const tuple = <Result>(
       : null
   );
   return (dom: Cheerio): Result =>
+    // @ts-ignore The many partials add up to a whole, but never provably
     thisTuple(dom).reduce(
-      (out, partial: Partial<Result>) => ({ ...out, ...partial }),
+      (out, partial) => ({ ...out, ...partial }),
       {} as Result
     );
 };

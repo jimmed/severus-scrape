@@ -1,0 +1,23 @@
+---
+name: url
+menu: API Reference
+route: /api/url
+---
+
+# `url`
+
+Creates a scraper which will return a parsed URL object from the `href` attribute of the selected DOM node.
+
+## Arguments
+
+```js
+url(selector, handler);
+```
+
+### `selector` (string)
+
+The CSS selector for the DOM node to select.
+
+### `handler` (URL ⇒ any)
+
+A function to post-process the URL of the selected attribute.

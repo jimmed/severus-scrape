@@ -1,0 +1,27 @@
+---
+name: attr
+menu: API Reference
+route: /api/attr
+---
+
+# `attr`
+
+Creates a scraper which will return a named attribute of the selected DOM node.
+
+## Arguments
+
+```js
+attr(selector, attribute, handler);
+```
+
+### `selector` (string)
+
+The CSS selector for the DOM node to select.
+
+### `attribute` (string)
+
+The name of the attribute to return.
+
+### `handler` (string ⇒ any)
+
+A function to post-process the raw value of the selected attribute.
