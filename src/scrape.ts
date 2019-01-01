@@ -121,14 +121,3 @@ export const tuple = <Result>(
       {} as Result
     );
 };
-
-export const scrape = {
-  section,
-  int,
-  text,
-  list,
-  attr,
-  url,
-  exists,
-  tuple
-};

@@ -1,0 +1,67 @@
+---
+name: TypeScript Support
+path: /typescript
+---
+
+# TypeScript Support
+
+scrapegoat is written in TypeScript, and comes bundled with type definitions.
+As much as possible, scrapegoat is written to be 100% type safe, as well as providing strong (but flexible) definitions for all types used.
+
+## Typing Pages
+
+You can use type generics to specify both the arguments and return type of a page.
+
+```ts
+type Args = { postId: number }
+type BlogPost = { title: string, body: string }
+
+export const blogPostPage = page<Args, BlogPost>({
+  url: ({ postId }) => `https://mycool.blog/posts/${postId}`,
+  scrape: section<BlogPost>('main', {
+    title: text('h1'),
+    body: text('article')
+  })
+})
+```
+
+In the above example, we call `page` with two type parameters, `Args` and `BlogPost`.
+By doing this, we can ensure type safety of the parameters we pass into our scraper, as well as the scraper definitions themselves.
+
+As an added bonus, we get excellent autocomplete support in editors with a good TypeScript integration.
+
+## Typing Scrapers
+
+Due to the power of TypeScript's inference engine, basic scrapers like `text` and `attr` can be used without any additional type annotations.
+
+However, for the slightly more complicated cases of `list`, `section` and `tuple`, you will often need to supply type parameters to the scraper, in order to give the type system enough information to correctly type the scraper function.
+All three of these methods accept a single type parameter:
+
+ - `section` and `tuple` accept a type parameter representing the whole returned object.
+ - `list` accepts a type parameter representing an item of the returned array.
+
+```ts
+type Args = { postId: number }
+type BlogPost = {
+  title: string,
+  body: string,
+  comments: Comment[]
+}
+type Comment = {
+  author: string,
+  body: string,
+  timestamp: Date
+}
+
+export const blogPostPage = page<Args, BlogPost>({
+  url: ({ postId }) => `https://mycool.blog/posts/${postId}`,
+  scrape: section<BlogPost>('main', {
+    title: text('h1'),
+    body: text('article'),
+    comments: list<Comment>('.comments', tuple<Comment>('div', [
+      { author: text() },
+      { body: text(), timestamp: attr('time', 'timestamp')}
+    ]))
+  })
+})
+```

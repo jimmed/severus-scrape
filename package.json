@@ -5,7 +5,8 @@
   "author": "Jim O'Brien <jim@jimmed.net>",
   "license": "MIT",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.10",

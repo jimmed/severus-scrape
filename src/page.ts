@@ -2,19 +2,19 @@ import * as cheerio from "cheerio";
 import fetch from "node-fetch";
 import { Url, urlFactory } from "./url";
 
-export interface PageDefinition<Args extends object, Result extends object> {
+export interface PageDefinition<Args extends object, Result> {
   url: string | Url | ((args: Args) => string | Url);
   scrape(dom: Cheerio): Result;
 }
 
-export interface PageScraper<Args extends object, Result extends object> {
+export interface PageScraper<Args extends object, Result> {
   url(args: Args): string;
   fetch(args: Args): Promise<string> | string;
   scrape(args: Args): Promise<Result> | Result;
   resolve(dom: Cheerio): Result;
 }
 
-export const page = <Args extends object, Result extends object>({
+export const page = <Args extends object, Result>({
   url,
   scrape
 }: PageDefinition<Args, Result>): PageScraper<Args, Result> => ({
