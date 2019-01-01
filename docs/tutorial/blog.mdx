@@ -1,0 +1,274 @@
+---
+name: Blog Scraper
+route: /tutorial/blog
+menu: Tutorials
+---
+
+# Tutorial: Creating a Blog Scraper
+
+In this tutorial, we are going to use scrapegoat to create a scraper for an imaginary blog.
+
+## The Imaginary Blog
+
+First off, let's take a look at the blog we want to scrape. Like most blogs, there are two _logical_ pages:
+
+- the index page, which shows a summary of all blog posts, and
+- the post page, which shows the full content of a blog post, and its full metadata.
+
+### Index Page
+
+The index page has HTML whose body contains something like:
+
+```html
+<!-- URL: https://imaginary.blog/ -->
+<main>
+  <section>
+    <header>
+      <h2><a href="/posts/2">The most recent post</a></h2>
+    </header>
+    <article>A short summary of the blog post</article>
+  </section>
+  <section>
+    <header>
+      <h2><a href="/posts/1">Another post</a></h2>
+    </header>
+    <article>Another summary of the post</article>
+  </section>
+</main>
+```
+
+### Post Page
+
+Each post page has HTML whose body contains something like:
+
+```html
+<!-- URL: https://imaginary.blog/posts/2 -->
+<main>
+  <header>
+    <h2>The most recent post</h2>
+    <span>Posted <time datetime="2019-01-01">1 day ago</time>
+  </header>
+  <article>
+    This blog post has a lot of content in it. It says a lot of things in as many words.
+  </article>
+</main>
+```
+
+## Creating the scraper
+
+Now that we've familiarised ourselves with what we're scraping, let's write some code!
+
+### Project Setup
+
+1. Create a new node.js project:
+
+```bash
+mkdir blog-scraper
+cd blog-scraper
+npm init --yes
+```
+
+2. Install scrapegoat:
+
+```bash
+npm install scrapegoat
+```
+
+### Define some constants
+
+One of the key principles of writing good software is avoiding repetition, and therefore creating a single source of truth for all things.
+
+Therefore, we're going to create `constants.js` to store the base URL for our blog.
+
+```js
+// constants.js
+export const BASE_URL = {
+  protocol: "https",
+  hostname: "imaginary.blog"
+};
+```
+
+We could just as well defined this as a string, `https://imaginary.blog`, but scrapegoat will accept URLs in the form of strings, or objects as returned by node.js's [url.parse](https://nodejs.org/api/url.html#url_url_parse_urlstring_parsequerystring_slashesdenotehost) method
+
+### Define the index page scraper
+
+The first page we're going to define is for the index page. We'll be working in `indexPage.js`
+
+First off, we need to import some things from scrapegoat - we'll talk about what they do later, when we come to use them.
+We're also going to import the base URL constant we defined a moment ago.
+
+```js
+import { page, list, section, url, text } from "scrapegoat";
+import { BASE_URL } from "./constants";
+```
+
+Now, we can dive in and start defining our page. The first thing to do is declare a call to `page()`:
+
+```js
+export const indexPage = page({
+  // ... something goes here ...
+});
+```
+
+`page` requires two things from us: how to build the URL, and how to scrape the returned HTML.
+
+### Specifying the page URL
+
+We can specify how to build the URL by passing a `url` property:
+
+```js
+export const indexPage = page({
+  url: BASE_URL
+});
+```
+
+Because our URL is static, and doesn't depend on any parameters (unlike the post page, as we'll see later), we can specify the URL as-is.
+Static URLs can be specified either as a string, or as a URL object.
+
+### Defining the scraper
+
+Now that we've specified where to find the page we're scraping, we need to specify _how_ to scrape it.
+
+To make this as simple as possible, scrapegoat provides a wide set of **scrapers**. Scrapers are functions which take a Cheerio DOM node and return some data.
+
+We want to define a scraper for the index page that will return an array of objects which looks like:
+
+```js
+[
+  {
+    id: 2,
+    title: "The most recent post",
+    summary: "A short summary of the blog post"
+  }
+];
+```
+
+To do this, we can define our scraper as follows:
+
+```js
+export const indexPage = page({
+  url: BASE_URL,
+  scrape: list(
+    "main section",
+    section(null, {
+      id: url("header h2 a", getIdFromPostUrl),
+      title: text("header h2 a"),
+      summary: text("article")
+    })
+  )
+});
+```
+
+In this example, `list`, `section`, `url` and `text` are all scrapers provided as part of scrapegoat.
+All of them take a DOM (CSS-style) selector, and some additional parameters, allowing you to declare most scrapers without writing any DOM manipulation code.
+
+Those with a keen eye may have noticed the reference to `getIdFromPostUrl`, a function that we haven't defined yet.
+
+This is a helper function that `url` requires, in order to convert the `href` attribute of an `<a>` (link) tag into meaningful data.
+
+In this case, we want to take a URL routename like `/posts/1`, and return the post ID (`1`) from it.
+
+We can define it as follows:
+
+```js
+const getIdFromPostUrl = ({ routename }) => {
+  const [, routeId] = routename.match(/^\/posts\/(\d+)/) || [];
+  return routeId ? parseInt(routeId, 10) : null;
+};
+```
+
+### Completed scraper
+
+Putting it all together, we should get something like this:
+
+```js
+import { page, list, section, url, text } from "scrapegoat";
+
+const BASE_URL = `https://imaginary.blog`;
+
+const getIdFromPostUrl = ({ routename }) => {
+  const [, routeId] = routename.match(/^\/posts\/(\d+)/) || [];
+  return routeId ? parseInt(routeId, 10) : null;
+};
+
+export const indexPage = page({
+  url: BASE_URL,
+  scrape: list(
+    "main section",
+    section(null, {
+      id: url("header h2 a", getIdFromPostUrl),
+      title: text("header h2 a"),
+      summary: text("article")
+    })
+  )
+});
+```
+
+We can now call our scraper by importing it from another file, and calling it:
+
+```js
+import { indexPage } from "./indexPage";
+
+indexPage.scrape().then(console.log, console.error);
+
+/* Logs:
+[
+  {
+    id: 2,
+    title: "The most recent post",
+    summary: "A short summary of the blog post"
+  },
+  {
+    id: 1,
+    title: "Another blog post",
+    summary: "Another summary of the blog post"
+  }
+];
+*/
+```
+
+### Creating the post page scraper
+
+We define our blog page scraper in much the same way as the index page scraper, except we have a different type of data being returned, and a dynamic URL.
+
+Because the post pages have a URL based on the blog post's ID, we will need to declare a function to generate a URL:
+
+```js
+export const postPage = page({
+  url: ({ postId }) => ({
+    ...BASE_URL,
+    routename: `/posts/${postId}`
+  })
+});
+```
+
+The scraper in this case is a lot more straightforward that the index page, as it only needs to return a simple object.
+
+```js
+export const postPage = page({
+  url: /* as before */
+  scrape: section('main', {
+    title: text('header h2'),
+    postedAt: attr('header time', 'datetime', d => new Date(d)),
+    body: text('article')
+  })
+})
+```
+
+## Building an index file
+
+We now have two fully-functional scrapers.
+All that remains to be done is write a small module to expose the scrapers to the world.
+
+```js
+// index.js
+import { indexPage } from "./indexPage";
+import { postPage } from "./postPage";
+
+export const getIndex = () => indexPage.scrape();
+export const getPost = postId => postPage.scrape({ postId });
+```
+
+Oh, and don't forget to write some documentation too!
+
+<small>and some unit tests probably couldn't hurt</small>

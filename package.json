@@ -12,10 +12,14 @@
     "@types/cheerio": "^0.22.10",
     "@types/node": "^10.12.18",
     "@types/node-fetch": "^2.1.4",
-    "ts-node": "^7.0.1",
-    "typescript": "^3.2.2",
+    "docz": "^0.13.7",
+    "docz-theme-default": "^0.13.7",
     "jest": "23.6.0",
-    "ts-jest": "23.10.5"
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "ts-jest": "23.10.5",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.2.2"
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",

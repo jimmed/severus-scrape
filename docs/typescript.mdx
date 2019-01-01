@@ -1,6 +1,7 @@
 ---
 name: TypeScript Support
-path: /typescript
+route: /overview/typescript
+menu: Overview
 ---
 
 # TypeScript Support
@@ -13,16 +14,16 @@ As much as possible, scrapegoat is written to be 100% type safe, as well as prov
 You can use type generics to specify both the arguments and return type of a page.
 
 ```ts
-type Args = { postId: number }
-type BlogPost = { title: string, body: string }
+type Args = { postId: number };
+type BlogPost = { title: string; body: string };
 
 export const blogPostPage = page<Args, BlogPost>({
   url: ({ postId }) => `https://mycool.blog/posts/${postId}`,
-  scrape: section<BlogPost>('main', {
-    title: text('h1'),
-    body: text('article')
+  scrape: section<BlogPost>("main", {
+    title: text("h1"),
+    body: text("article")
   })
-})
+});
 ```
 
 In the above example, we call `page` with two type parameters, `Args` and `BlogPost`.
@@ -37,31 +38,34 @@ Due to the power of TypeScript's inference engine, basic scrapers like `text` an
 However, for the slightly more complicated cases of `list`, `section` and `tuple`, you will often need to supply type parameters to the scraper, in order to give the type system enough information to correctly type the scraper function.
 All three of these methods accept a single type parameter:
 
- - `section` and `tuple` accept a type parameter representing the whole returned object.
- - `list` accepts a type parameter representing an item of the returned array.
+- `section` and `tuple` accept a type parameter representing the whole returned object.
+- `list` accepts a type parameter representing an item of the returned array.
 
 ```ts
-type Args = { postId: number }
+type Args = { postId: number };
 type BlogPost = {
-  title: string,
-  body: string,
-  comments: Comment[]
-}
+  title: string;
+  body: string;
+  comments: Comment[];
+};
 type Comment = {
-  author: string,
-  body: string,
-  timestamp: Date
-}
+  author: string;
+  body: string;
+  timestamp: Date;
+};
 
 export const blogPostPage = page<Args, BlogPost>({
   url: ({ postId }) => `https://mycool.blog/posts/${postId}`,
-  scrape: section<BlogPost>('main', {
-    title: text('h1'),
-    body: text('article'),
-    comments: list<Comment>('.comments', tuple<Comment>('div', [
-      { author: text() },
-      { body: text(), timestamp: attr('time', 'timestamp')}
-    ]))
+  scrape: section<BlogPost>("main", {
+    title: text("h1"),
+    body: text("article"),
+    comments: list<Comment>(
+      ".comments",
+      tuple<Comment>("div", [
+        { author: text() },
+        { body: text(), timestamp: attr("time", "timestamp") }
+      ])
+    )
   })
-})
+});
 ```
