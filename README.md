@@ -1,4 +1,4 @@
-# scrapegoat
+# scrapegoat <🐐>
 
 Make a GraphQL API from a website using scrapers
 

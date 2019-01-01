@@ -7,14 +7,13 @@ import { parse as parseUrl, UrlWithParsedQuery } from "url";
  *
  * @param selector The selector for the DOM node to pass to the handler
  * @param scraper A function, which given the selected DOM node returns the result of the scraping operation
- * @typedef ScrapeResult
  */
-const withNode = <ScrapeResult>(
+const withNode = <Result>(
   selector: string | null,
-  scraper: (node: Cheerio) => ScrapeResult
-) => (dom: Cheerio): ScrapeResult | null => {
+  scraper: (node: Cheerio) => Result
+) => (dom: Cheerio): Result | null => {
   const node = selector ? cheerio(selector, dom).first() : dom;
-  console.log(selector, node);
+  console.log({ selector, node });
   return node && node.length ? scraper(node) : null;
 };
 
@@ -82,10 +81,10 @@ const int = (selector: string, radix: number = 10) =>
  * @param selector The selector for the DOM nodes.
  * @param scraper A scraper to handle each matched node.
  */
-const list = <ScrapeResult>(
+const list = <Result>(
   selector: string,
-  scraper: (dom: Cheerio, index: number) => ScrapeResult
-) => (dom: Cheerio): ScrapeResult[] =>
+  scraper: (dom: Cheerio, index: number) => Result
+) => (dom: Cheerio): Result[] =>
   dom
     .find(selector)
     .map((index, node) => {
@@ -94,15 +93,15 @@ const list = <ScrapeResult>(
     })
     .get();
 
-const attr = <ScrapeResult>(
+const attr = <Result>(
   selector: string,
   attribute: string,
-  handler: (value: string) => ScrapeResult
+  handler: (value: string) => Result
 ) => withNode(selector, node => handler(node.attr(attribute)));
 
-const url = <ScrapeResult>(
+const url = <Result>(
   selector: string,
-  handler: (url: UrlWithParsedQuery) => ScrapeResult
+  handler: (url: UrlWithParsedQuery) => Result
 ) => attr(selector, "href", href => handler(parseUrl(href, true)));
 
 const exists = (selector: string) => withNode(selector, node => true);
