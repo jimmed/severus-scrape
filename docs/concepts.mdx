@@ -1,6 +1,7 @@
 ---
 name: Concepts
-path: /concepts
+route: /overview/concepts
+menu: Overview
 ---
 
 # Concepts
@@ -19,8 +20,8 @@ A **page**, as scrapegoat sees it, is an object which describes how to perform e
 
 Most of the time, steps 2-3 (fetching and parsing the HTML) will always be the same, so scrapegoat provides a `page` function, which will generate a page for you based on:
 
- - how to generate the URL of the page, and
- - how to extract data from the DOM.
+- how to generate the URL of the page, and
+- how to extract data from the DOM.
 
 A simple example of this might look like:
 
@@ -32,7 +33,7 @@ type BlogPost = { title: string, body: string, comments: Comment[] }
 type Comment = { author: string, avatar: string, body: string }
 
 export const blogPostPage = page<Args, BlogPost>({
-  url: ({ postId }) => `https://mycool.info/posts/${postId}`,
+  url: ({ postId }) => `https://mycool.blog/posts/${postId}`,
   scrape: section<BlogPost>('main', {
     title: text('header h1'),
     body: text('article'),
@@ -50,4 +51,3 @@ You can learn more about pages in the [tutorial](./tutorial/blog).
 ## Scrapers
 
 Put simply, scrapers are pure functions that take a [Cheerio](https://cheerio.js.org/) DOM and return data extracted from it.
-
