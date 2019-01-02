@@ -6,7 +6,9 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
-    "build": "tsc"
+    "build": "tsc",
+    "docs": "docz",
+    "now-build": "yarn docs build"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.10",

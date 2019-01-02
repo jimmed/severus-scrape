@@ -11,7 +11,7 @@ building a scraper isn't a particularly difficult thing to do. It is, however, a
 By providing a reusable library with enough functionality to express most common scraper behaviours,
 it becomes completely trivial to write a scraper for most websites.
 
-## [Full Documentation](https://scrapegoat.surge.sh/)
+## [Full Documentation](https://scrapegoat.now.sh/)
 
 ## Example Usage
 
