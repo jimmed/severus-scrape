@@ -1,5 +1,6 @@
 import {
   urlFactory,
+  urlFactoryFromString,
   urlFactoryFromObject,
   urlFactoryFromFunction
 } from "./url";
@@ -7,6 +8,29 @@ import {
 const mockUrl = () =>
   Object.freeze({ protocol: "https", hostname: "test", pathname: "path" });
 const testUrl = "https://test/path";
+
+describe("urlFactoryFromString", () => {
+  it("should be a function", () => {
+    expect(urlFactoryFromString).toBeInstanceOf(Function);
+  });
+
+  describe("when called with a string", () => {
+    let fn;
+    beforeEach(() => {
+      fn = urlFactoryFromString(testUrl);
+    });
+
+    it("should return a function", () => {
+      expect(fn).toBeInstanceOf(Function);
+    });
+
+    describe("which when called", () => {
+      it("should return a string of that URL", () => {
+        expect(fn()).toBe(testUrl);
+      });
+    });
+  });
+});
 
 describe("urlFactoryFromObject", () => {
   it("should be a function", () => {

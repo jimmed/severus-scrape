@@ -1,5 +1,12 @@
 import { UrlObject as Url, format as formatUrl } from "url";
+import { flow } from "lodash";
 export { Url } from "url";
+
+export const urlFactoryFromString = (url: string) => () => url;
+export const urlFactoryFromObject = flow(
+  formatUrl,
+  urlFactoryFromString
+);
 
 export const urlFactoryFromFunction = <A>(
   factory: (args: A) => Url | string
@@ -9,17 +16,12 @@ export const urlFactoryFromFunction = <A>(
   return formatUrl(url);
 };
 
-export const urlFactoryFromObject = (object: Url) => {
-  const url = formatUrl(object);
-  return () => url;
-};
-
 export const urlFactory = <A = undefined>(
   url: string | Url | ((args: A) => string | Url)
 ) => {
   switch (typeof url) {
     case "string":
-      return () => url;
+      return urlFactoryFromString(url);
     case "function":
       return urlFactoryFromFunction<A>(url);
     case "object":
