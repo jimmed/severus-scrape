@@ -1,17 +1,17 @@
-import * as cheerio from "cheerio";
+import { parse as parseHtml, HtmlElement } from "fast-html-parser";
 import fetch from "node-fetch";
 import { Url, urlFactory } from "./url";
 
 export interface PageDefinition<Args extends object, Result> {
   url: string | Url | ((args: Args) => string | Url);
-  scrape(dom: Cheerio): Result;
+  scrape(dom: HtmlElement): Result;
 }
 
 export interface PageScraper<Args extends object, Result> {
   url(args: Args): string;
   fetch(args: Args): Promise<string> | string;
   scrape(args: Args): Promise<Result> | Result;
-  resolve(dom: Cheerio): Result;
+  resolve(dom: HtmlElement): Result;
 }
 
 export const page = <Args extends object, Result>({
@@ -25,9 +25,7 @@ export const page = <Args extends object, Result>({
     return res.text();
   },
   async scrape(args: Args): Promise<Result> {
-    const html = await this.fetch(args);
-    const dom = cheerio.load(html);
-    return this.resolve(dom);
+    return this.resolve(parseHtml(await this.fetch(args)));
   },
   resolve: scrape
 });

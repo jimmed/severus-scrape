@@ -1,4 +1,4 @@
-import * as cheerio from "cheerio";
+import { HtmlElement } from "fast-html-parser";
 import { flow } from "lodash";
 import { parse as parseUrl } from "url";
 
@@ -10,12 +10,11 @@ import { parse as parseUrl } from "url";
  * @param scraper A function, which given the selected DOM node returns the result of the scraping operation
  */
 export const node = <Result>(
-  selector: string | null,
-  scraper: (node: Cheerio) => Result
-) => (dom: Cheerio): Result | null => {
-  const node = selector ? cheerio(selector, dom).first() : dom;
-  console.log({ selector, node });
-  return node && node.length ? scraper(node) : null;
+  selector: string,
+  scraper: (node: HtmlElement) => Result
+) => (dom: HtmlElement): Result | null => {
+  const node = selector ? dom.querySelector(selector) : dom;
+  return node && scraper(node);
 };
 
 /**
@@ -25,12 +24,19 @@ export const node = <Result>(
  */
 export const text = (selector: string, trim: boolean = true) =>
   node(selector, node => {
-    const text = node.text();
-    return trim ? text.trim() : text;
+    const text = node.text;
+    return text && trim ? text.trim() : text;
   });
 
-export const attr = (selector: string, attribute: string) =>
-  node(selector, node => node.attr(attribute));
+export const attr = (
+  selector: string,
+  attribute: string,
+  raw: boolean = false
+) =>
+  node(
+    selector,
+    node => node[raw ? "rawAttributes" : "attributes"][attribute] || null
+  );
 
 export const url = (selector: string) =>
   flow(
@@ -51,7 +57,7 @@ export const int = (selector: string, radix: number = 10) =>
   );
 
 export type SectionFields<Result> = {
-  [Key in keyof Result]: (dom: Cheerio) => Result[Key]
+  [Key in keyof Result]: (dom: HtmlElement) => Result[Key]
 };
 
 /**
@@ -78,7 +84,7 @@ export const section = <Result extends { [key: string]: any }>(
 ) =>
   node(
     selector,
-    (dom: Cheerio): Result =>
+    (dom: HtmlElement): Result =>
       // @FIXME: _.mapValues doesn't have a suitable type declaration
       Object.keys(fields).reduce(
         <K extends keyof Result>(out: Result, key: K) => ({
@@ -97,15 +103,9 @@ export const section = <Result extends { [key: string]: any }>(
  */
 export const list = <Result>(
   selector: string,
-  scraper: (dom: Cheerio, index: number) => Result
-) => (dom: Cheerio): Result[] =>
-  dom
-    .find(selector)
-    .map((index, node) => {
-      const child = cheerio.load(node).root();
-      return scraper(child, index);
-    })
-    .get();
+  scraper: (dom: HtmlElement, index: number) => Result
+) => (dom: HtmlElement): Result[] =>
+  dom.querySelectorAll(selector).map(scraper);
 
 export const exists = (selector: string) => node(selector, node => true);
 
@@ -118,7 +118,7 @@ export const tuple = <Result>(
       ? section<Partial<Result>>(null, scrapers[index])(node)
       : null
   );
-  return (dom: Cheerio): Result =>
+  return (dom: HtmlElement): Result =>
     // @ts-ignore The many partials add up to a whole, but never provably
     thisTuple(dom).reduce(
       (out, partial) => ({ ...out, ...partial }),
