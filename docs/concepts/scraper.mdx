@@ -12,27 +12,27 @@ You are free to define this function in whatever way you like. A simplistic exam
 
 ```ts
 const blogPostScraper = $ => ({
-  title: $('main h1').text(),
-  body: $('main article').text(),
-  likes: parseInt($('main .likes').text(), 10)
-})
+  title: $("main h1").text(),
+  body: $("main article").text(),
+  likes: parseInt($("main .likes").text(), 10),
+});
 ```
 
 ## Built-in Scrapers
 
-Because writing scrapers like this can become repetitive, scrapegoat provides a number of built-in scraper factories for handling common actions.
+Because writing scrapers like this can become repetitive, Severus Scrape provides a number of built-in scraper factories for handling common actions.
 These scraper factories are functions which return a scraper.
 
 For example, the previous scraper could be redefined using scraper factories, like this:
 
 ```ts
-import { section, text, int } from 'scrapegoat'
+import { section, text, int } from "severus-scrape";
 
-const blogPostScraper = section('main', {
-  title: text('h1'),
-  body: text('article'),
-  likes: int('.likes')
-})
+const blogPostScraper = section("main", {
+  title: text("h1"),
+  body: text("article"),
+  likes: int(".likes"),
+});
 ```
 
 All built-in scraper factories take a selector as their first argument.
@@ -45,7 +45,7 @@ This approach of using factories to declare scrapers allows you to focus on extr
 The `text` method is a scraper which returns the inner text of the selected node:
 
 ```ts
-const titleScraper = text('h1')
+const titleScraper = text("h1");
 ```
 
 By default, it will trim any leading/trailing whitespace. This behaviour can be disabled by passing `false` as the second argument.
@@ -55,14 +55,14 @@ By default, it will trim any leading/trailing whitespace. This behaviour can be 
 The `int` method is a combination of the `text` scraper, and `parseInt`.
 
 ```ts
-const likesScraper = int('.likes')
+const likesScraper = int(".likes");
 ```
 
 By default, `int` assumes you are parsing a base 10 number; to override this, you may pass the radix as a second argument:
 
 ```ts
 // Parse a hexadecimal integer
-const hashScraper = int('.hash', 16)
+const hashScraper = int(".hash", 16);
 ```
 
 ### Reading from a node's attribute
@@ -70,7 +70,7 @@ const hashScraper = int('.hash', 16)
 The `attr` method will read a named attribute from a node.
 
 ```ts
-const urlScraper = attr('h1 a', 'href')
+const urlScraper = attr("h1 a", "href");
 ```
 
 ### Reading data from link URLs
@@ -80,14 +80,14 @@ The `url` method extracts the `href` of a given node, and parses it using node.j
 The parsed URL object is passed to a transform method that you must specify.
 
 ```ts
-const idScraper = url('h1 a', url => url.query.id)
+const idScraper = url("h1 a", url => url.query.id);
 ```
 
 ## Higher-order Scrapers
 
 Sometimes, it is useful to be able to combine scrapers to handle nodes in the page which represent complex data (i.e. arrays and objects, rather than just strings and numbers).
 
-To assist this, scrapegoat has a set of scraper factories for these scenarios.
+To assist this, Severus Scrape provides some scraper factories for these common scenarios.
 
 ### Scraping an object from a node
 
@@ -95,34 +95,34 @@ In the blog post example we saw at the start, we wanted our scraper to return an
 In order to achieve this, we used the `section` scraper factory.
 
 The `section` method returns a scraper that finds a specific node, and returns an object using a mapping of keys to scrapers.
-Each of these _child_ scrapers is called with the node specified by the selector, in order to return an object of the same shape. 
+Each of these _child_ scrapers is called with the node specified by the selector, in order to return an object of the same shape.
 
 This is better expressed by example:
 
 ```ts
-const blogPostScraper = section('article.blog-post', {
-  title: text('h1'),
-  body: text('.blog-post-body'),
-  likes: int('.likes')
-})
+const blogPostScraper = section("article.blog-post", {
+  title: text("h1"),
+  body: text(".blog-post-body"),
+  likes: int(".likes"),
+});
 ```
 
 It is possible to nest whatever scraper you like inside the second argument passed to `section`, so you can build up complex objects quickly:
 
 ```ts
-const blogPostScraper = section('article.blog-post', {
-  title: text('h1'),
+const blogPostScraper = section("article.blog-post", {
+  title: text("h1"),
   // .. rest as before ..
 
-  author: section('.about-author', {
-    name: text('h2'),
-    avatar: attr('.avatar img', 'src'),
-    links: section('.links', {
-      blog: text('.blog'),
-      twitter: text('.twitter')
-    })
-  })
-})
+  author: section(".about-author", {
+    name: text("h2"),
+    avatar: attr(".avatar img", "src"),
+    links: section(".links", {
+      blog: text(".blog"),
+      twitter: text(".twitter"),
+    }),
+  }),
+});
 ```
 
 ### Scraping data from a list of nodes
@@ -132,7 +132,7 @@ When you need to scrape an array of data from a list of nodes, the `list` method
 The `list` method is a scraper factory, returning a scraper which behaves a lot like `Array.map`. It accepts a selector and a scraper function, and returns the result of mapping that scraper over every node matching that selector.
 
 ```ts
-const categoriesScraper = list('ul.categories', text('li'))
+const categoriesScraper = list("ul.categories", text("li"));
 ```
 
 ### Scraping data from a fixed-order tuple of nodes
@@ -146,20 +146,18 @@ Given a DOM structure like this:
 
 ```html
 <div class="user-details">
-  <span>Jim</span>
-  <span>29</span>
-  <span>United Kingdom</span>
+  <span>Jim</span> <span>29</span> <span>United Kingdom</span>
 </div>
 ```
 
-we can use `tuple` to extract an object with `name`, `age` and `country` attributes, like so: 
+we can use `tuple` to extract an object with `name`, `age` and `country` attributes, like so:
 
 ```ts
-const userDetailsScraper = tuple('.user-details span', [
+const userDetailsScraper = tuple(".user-details span", [
   { name: text() },
   { age: int() },
-  { country: text() }
-])
+  { country: text() },
+]);
 ```
 
 Calling this scraper with the above DOM would return:
@@ -181,11 +179,20 @@ Assuming you have a table:
 ```html
 <table id="users">
   <thead>
-    <tr><th>Name</th><th>Age</th></tr>
+    <tr>
+      <th>Name</th>
+      <th>Age</th>
+    </tr>
   </thead>
   <tbody>
-    <tr><td>Jim</td><td>29</td></tr>
-    <tr><td>AJ</td><td>31</td></tr>
+    <tr>
+      <td>Jim</td>
+      <td>29</td>
+    </tr>
+    <tr>
+      <td>AJ</td>
+      <td>31</td>
+    </tr>
   </tbody>
 </table>
 ```
@@ -193,8 +200,5 @@ Assuming you have a table:
 You can define a scraper for the rows of that table as follows:
 
 ```ts
-const usersTableScraper = table('#users', [
-  { name: text() },
-  { age: int() }
-])
+const usersTableScraper = table("#users", [{ name: text() }, { age: int() }]);
 ```

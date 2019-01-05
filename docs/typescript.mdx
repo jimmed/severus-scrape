@@ -6,8 +6,8 @@ menu: Overview
 
 # TypeScript Support
 
-scrapegoat is written in TypeScript, and comes bundled with type definitions.
-As much as possible, scrapegoat is written to be 100% type safe, as well as providing strong (but flexible) definitions for all types used.
+Severus Scrape is written in TypeScript, and comes bundled with type definitions.
+As much as possible, Severus Scrape is written to be 100% type safe, as well as providing strong (but flexible) definitions for all types used.
 
 ## Typing Pages
 
@@ -21,8 +21,8 @@ export const blogPostPage = page<Args, BlogPost>({
   url: ({ postId }) => `https://mycool.blog/posts/${postId}`,
   scrape: section<BlogPost>("main", {
     title: text("h1"),
-    body: text("article")
-  })
+    body: text("article"),
+  }),
 });
 ```
 
@@ -39,7 +39,7 @@ However, for the slightly more complicated cases of `list`, `section` and `tuple
 All three of these methods accept a single type parameter:
 
 - `section` and `tuple` accept a type parameter representing the whole returned object.
-- `list` accepts a type parameter representing an item of the returned array.
+- `list` and `table` accept a type parameter representing an item of the returned array.
 
 ```ts
 type Args = { postId: number };
@@ -63,9 +63,9 @@ export const blogPostPage = page<Args, BlogPost>({
       ".comments",
       tuple<Comment>("div", [
         { author: text() },
-        { body: text(), timestamp: attr("time", "timestamp") }
+        { body: text(), timestamp: attr("time", "timestamp") },
       ])
-    )
-  })
+    ),
+  }),
 });
 ```

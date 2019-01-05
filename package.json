@@ -1,6 +1,6 @@
 {
-  "name": "scrapegoat",
-  "version": "1.0.0",
+  "name": "severus-scrape",
+  "version": "0.1.0-alpha.0",
   "main": "index.js",
   "author": "Jim O'Brien <jim@jimmed.net>",
   "license": "MIT",
