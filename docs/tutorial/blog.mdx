@@ -151,7 +151,7 @@ export const indexPage = page({
   scrape: list(
     "main section",
     section(null, {
-      id: url("header h2 a", getIdFromPostUrl),
+      id: flow([url("header h2 a"), getIdFromPostUrl]),
       title: text("header h2 a"),
       summary: text("article"),
     })
@@ -183,11 +183,11 @@ Putting it all together, we should get something like this:
 
 ```js
 import { page, list, section, url, text } from "severus-scrape";
+import flow from "lodash/flow";
+import { BASE_URL } from "./constants";
 
-const BASE_URL = `https://imaginary.blog`;
-
-const getIdFromPostUrl = ({ routename }) => {
-  const [, routeId] = routename.match(/^\/posts\/(\d+)/) || [];
+const getIdFromPostUrl = ({ pathname }) => {
+  const [, routeId] = pathname.match(/^\/posts\/(\d+)/) || [];
   return routeId ? parseInt(routeId, 10) : null;
 };
 
@@ -196,7 +196,7 @@ export const indexPage = page({
   scrape: list(
     "main section",
     section(null, {
-      id: url("header h2 a", getIdFromPostUrl),
+      id: flow([url("header h2 a"), getIdFromPostUrl]),
       title: text("header h2 a"),
       summary: text("article"),
     })
@@ -209,7 +209,7 @@ We can now call our scraper by importing it from another file, and calling it:
 ```js
 import { indexPage } from "./indexPage";
 
-indexPage.scrape().then(console.log, console.error);
+indexPage.resolve().then(console.log, console.error);
 
 /* Logs:
 [
@@ -244,12 +244,18 @@ export const postPage = page({
 
 The scraper in this case is a lot more straightforward that the index page, as it only needs to return a simple object.
 
-```js
+```ts
+import parseDate from 'date-fns/parse'
+import flow from 'lodash/flow'
+
 export const postPage = page({
   url: /* as before */
   scrape: section('main', {
     title: text('header h2'),
-    postedAt: attr('header time', 'datetime', d => new Date(d)),
+    postedAt: flow([
+      attr('header time', 'datetime'),
+      parseDate
+    ]),
     body: text('article')
   })
 })
@@ -265,8 +271,8 @@ All that remains to be done is write a small module to expose the scrapers to th
 import { indexPage } from "./indexPage";
 import { postPage } from "./postPage";
 
-export const getIndex = () => indexPage.scrape();
-export const getPost = postId => postPage.scrape({ postId });
+export const getIndex = () => indexPage.resolve();
+export const getPost = postId => postPage.resolve({ postId });
 ```
 
 Oh, and don't forget to write some documentation too!
