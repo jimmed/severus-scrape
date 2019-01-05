@@ -14,6 +14,13 @@ These steps typically follow as such:
 3. Parse the page's HTML into a DOM
 4. Extract data from the DOM
 
+To achieve this, scrapegoat uses the following concepts:
+
+ - **Site** - A collection of pages, served from the same domain
+ - **Page** - A mapping from a parameterised URL to a scraper
+ - **Scraper** - A function which converts a DOM node into meaningful data
+ - **Parser** - A function which converts a page's HTML into a DOM node
+
 ## Pages
 
 A **page**, as scrapegoat sees it, is an object which describes how to perform each of those 4 steps.

@@ -1,0 +1,29 @@
+---
+name: Concepts: Overview
+route: /overview/concepts
+menu: Concepts
+---
+
+# Concepts: Overview
+
+Scrapers go through a series of steps to pull data from a website ─ those generated using scrapegoat are no different.
+These steps typically follow as such:
+
+1. Generate a URL for the page to scrape
+2. Fetch the page
+3. Parse the page's HTML into a DOM
+4. Extract data from the DOM
+
+To achieve this, scrapegoat uses the following concepts:
+
+ - **Site** - A collection of pages, served from the same domain
+ - **Page** - A named mapping from a parameterised URL to a scraper (and parser)
+ - **Scraper** - A function which converts a DOM node into meaningful data
+ - **Parser** - A function which converts a page's HTML into a DOM node
+
+You can define a scraper for a site by combining these concepts, using methods provided by scrapegoat. 
+
+
+## Scrapers
+
+Put simply, scrapers are pure functions that take a [Cheerio](https://cheerio.js.org/) DOM and return data extracted from it.

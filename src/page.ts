@@ -21,7 +21,6 @@ export const page = <Args extends object, Result>({
   url: urlFactory(url),
   async fetch(args: Args): Promise<string> {
     const url = this.url(args);
-    console.log({ url, args });
     const res = await fetch(url);
     return res.text();
   },

@@ -122,3 +122,9 @@ export const tuple = <Result>(
       {} as Result
     );
 };
+
+export const table = <Result>(
+  selector: string,
+  rowScrapers: Array<Partial<SectionFields<Result>> | null>,
+  hasBody: boolean = true
+) => list(`${hasBody ? "tbody " : ""} tr`, tuple("td", rowScrapers));
