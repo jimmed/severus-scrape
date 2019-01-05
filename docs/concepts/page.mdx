@@ -29,7 +29,7 @@ export const blogPostPage = page<Args, BlogPost>({
     body: text('article'),
     comments: list<Comment>('.comments', section('.comment', {
       author: text('.author'),
-      avatar: attr('.avatar', 'src', x => x)
+      avatar: attr('.avatar', 'src')
       body: text('article'),
       karma: int('.karma span')
     }))

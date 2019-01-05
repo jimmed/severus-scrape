@@ -16,13 +16,7 @@ These steps typically follow as such:
 
 To achieve this, Severus Scrape uses the following concepts:
 
-- **Site** - A collection of pages, served from the same domain
-- **Page** - A named mapping from a parameterised URL to a scraper (and parser)
-- **Scraper** - A function which converts a DOM node into meaningful data
-- **Parser** - A function which converts a page's HTML into a DOM node
+<!-- - **Site** - A collection of pages, served from the same domain -->
 
-You can define a scraper for a site by combining these concepts, using methods provided by Severus Scrape.
-
-## Scrapers
-
-Put simply, scrapers are pure functions that take a [Cheerio](https://cheerio.js.org/) DOM and return data extracted from it.
+- [**Pages**](/concepts/page) - A named mapping from a parameterised URL to a scraper (and parser)
+- [**Scrapers**](/concepts/scraper) - A function which converts a DOM node into meaningful data

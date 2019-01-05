@@ -77,10 +77,15 @@ const urlScraper = attr("h1 a", "href");
 
 Often, you may want to extract an ID or other part of a URL from a link in the page.
 The `url` method extracts the `href` of a given node, and parses it using node.js's `url.parse` method.
-The parsed URL object is passed to a transform method that you must specify.
 
 ```ts
-const idScraper = url("h1 a", url => url.query.id);
+const urlScraper = url("h1 a");
+```
+
+If you want to extract specific data from the URL object, compose your scraper with a function that transforms the URL object somehow.
+
+```ts
+const idFromUrlScraper = flow([url("h1 a"), url => url.query.id]);
 ```
 
 ## Higher-order Scrapers
@@ -202,3 +207,5 @@ You can define a scraper for the rows of that table as follows:
 ```ts
 const usersTableScraper = table("#users", [{ name: text() }, { age: int() }]);
 ```
+
+`table` is implemented as a combination of `list` and `tuple`.

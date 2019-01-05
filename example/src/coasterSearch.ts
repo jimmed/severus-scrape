@@ -1,6 +1,7 @@
 import { basename } from "path";
 import { UrlWithParsedQuery } from "url";
 import { parse as parseDate } from "date-fns";
+import { flow } from "lodash";
 import {
   page,
   section,
@@ -58,7 +59,7 @@ export const coasterSearchPage = page<Args, Results>({
       { typeId: url("a", idFromQuery), type: text("a") },
       { designId: url("a", idFromQuery), design: text("a") },
       { statusId: url("a", idFromQuery), status: text("a") },
-      { opened: attr("time", "datetime", parseDate) }
+      { opened: flow([attr("time", "datetime"), parseDate]) }
     ])
   })
 });

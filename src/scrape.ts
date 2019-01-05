@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
-import { parse as parseUrl, UrlWithParsedQuery } from "url";
+import { flow } from "lodash";
+import { parse as parseUrl } from "url";
 
 /**
  * Helper function for building a scraper using a single DOM node.
@@ -16,6 +17,38 @@ export const node = <Result>(
   console.log({ selector, node });
   return node && node.length ? scraper(node) : null;
 };
+
+/**
+ * Scrape the inner text from a DOM node.
+ * @param selector The selector for the DOM node.
+ * @param trim Whether to trim the text (default: `true`)
+ */
+export const text = (selector: string, trim: boolean = true) =>
+  node(selector, node => {
+    const text = node.text();
+    return trim ? text.trim() : text;
+  });
+
+export const attr = (selector: string, attribute: string) =>
+  node(selector, node => node.attr(attribute));
+
+export const url = (selector: string) =>
+  flow(
+    attr(selector, "href"),
+    (href: string) => parseUrl(href, true)
+  );
+
+/**
+ * Scrape the inner text from a DOM node, and parse it as an integer.
+ * Essentially a wrapper around `parseInt`.
+ * @param selector The selector for the DOM node.
+ * @param radix The radix to pass to `parseInt` (default: `10`)
+ */
+export const int = (selector: string, radix: number = 10) =>
+  flow(
+    text(selector),
+    text => parseInt(text, radix)
+  );
 
 export type SectionFields<Result> = {
   [Key in keyof Result]: (dom: Cheerio) => Result[Key]
@@ -46,6 +79,7 @@ export const section = <Result extends { [key: string]: any }>(
   node(
     selector,
     (dom: Cheerio): Result =>
+      // @FIXME: _.mapValues doesn't have a suitable type declaration
       Object.keys(fields).reduce(
         <K extends keyof Result>(out: Result, key: K) => ({
           ...out,
@@ -54,26 +88,6 @@ export const section = <Result extends { [key: string]: any }>(
         {} as Result
       )
   );
-
-/**
- * Scrape the inner text from a DOM node.
- * @param selector The selector for the DOM node.
- * @param trim Whether to trim the text (default: `true`)
- */
-export const text = (selector: string, trim: boolean = true) =>
-  node(selector, node => {
-    const text = node.text();
-    return trim ? text.trim() : text;
-  });
-
-/**
- * Scrape the inner text from a DOM node, and parse it as an integer.
- * Essentially a wrapper around `parseInt`.
- * @param selector The selector for the DOM node.
- * @param radix The radix to pass to `parseInt` (default: `10`)
- */
-export const int = (selector: string, radix: number = 10) =>
-  node(selector, node => parseInt(node.text(), radix));
 
 /**
  * Scrape an array of DOM nodes matching a selector, using another scraper.
@@ -92,17 +106,6 @@ export const list = <Result>(
       return scraper(child, index);
     })
     .get();
-
-export const attr = <Result>(
-  selector: string,
-  attribute: string,
-  handler: (value: string) => Result
-) => node(selector, node => handler(node.attr(attribute)));
-
-export const url = <Result>(
-  selector: string,
-  handler: (url: UrlWithParsedQuery) => Result
-) => attr(selector, "href", href => handler(parseUrl(href, true)));
 
 export const exists = (selector: string) => node(selector, node => true);
 
