@@ -1,5 +1,5 @@
 export default {
-  title: "Severus Scrape &lt;🧙‍/&gt;",
+  title: "Severus Scrape",
   description: "Use magic to scrape websites",
   themeConfig: {
     colors: {
