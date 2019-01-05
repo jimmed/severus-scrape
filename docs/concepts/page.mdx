@@ -1,0 +1,135 @@
+---
+name: Pages
+route: /concepts/page
+menu: Concepts
+---
+
+# Pages
+
+A **page**, as scrapegoat sees it, is an object which describes how to perform each of those 4 steps.
+
+Most of the time, steps 2-3 (fetching and parsing the HTML) will always be the same, so scrapegoat provides a `page` function, which will generate a page for you based on:
+
+- how to generate the URL of the page, and
+- how to extract data from the DOM.
+
+A simple example of this might look like:
+
+```ts
+import { page, section, text, int, list } from 'scrapegoat'
+
+type Args = { postId: number }
+type BlogPost = { title: string, body: string, comments: Comment[] }
+type Comment = { author: string, avatar: string, body: string }
+
+export const blogPostPage = page<Args, BlogPost>({
+  url: ({ postId }) => `https://mycool.blog/posts/${postId}`,
+  scrape: section<BlogPost>('main', {
+    title: text('header h1'),
+    body: text('article'),
+    comments: list<Comment>('.comments', section('.comment', {
+      author: text('.author'),
+      avatar: attr('.avatar', 'src', x => x)
+      body: text('article'),
+      karma: int('.karma span')
+    }))
+  })
+})
+```
+
+The returned object, `blogPostPage`, has a `resolve` method, which will fetch a blog post by ID.
+
+```ts
+const blogPost = await blogPostPage.resolve({ postId: 'some-cool-post' });
+console.log(blogPost)
+```
+
+The above code would log an object of the following shape:
+
+```js
+{
+  title: 'Some Cool Post',
+  body: 'Lorem ipsum donut bacon hungry developer amet...',
+  comments: [
+    {
+      author: 'Barry',
+      avatar: 'https://.../pic.jpg',
+      body: 'You seem hungry',
+      karma: 3
+    },
+    // ...
+  ]
+}
+```
+
+## Static URLs
+
+In essence, pages represent a scraper for one or more URLs that return HTML of the same shape.
+
+The simplest way to do this is to specify `url` as a string:
+
+```ts
+const staticBlogPostPage = page({
+  url: 'https://imaginary.blog/path/to/post',
+  // ...
+})
+```
+
+If you prefer, you may instead specify `url` as a node.js `URL` object, to be serialized using [`url.format`](https://nodejs.org/api/url.html#url_url_format_urlobject). 
+
+```ts
+const staticBlogPostPage = page({
+  url: {
+    protocol: 'https',
+    hostname: 'imaginary.blog',
+    pathname: '/path/to/post'
+  }
+})
+```
+
+Specifying the URL is not particularly useful, until you begin to use dynamic URLs.
+
+## Dynamic URLs
+
+In our blog post example above, our URL is _dynamic_ ─ we need to _generate_ our URL at runtime.
+
+To allow this, `url` may be specified as a function. This function should accept a single object containing parameters, and return the URL as _either_ a string or object, as above.
+
+```ts
+const dynamicBlogPostPage = page({
+  url: ({ postId }) => `https://imaginary.blog/posts/${postId}`
+})
+```
+
+As mentioned above, you may also return a URL object ─ this can be especially useful when constructing URLs with query strings:
+
+```ts
+const searchPage = page({
+  url: ({ query, page = 1 }) => ({
+    protocol: 'https',
+    hostname: 'imaginary.blog',
+    pathname: '/search',
+    query: { query, page }
+  }) 
+})
+```
+
+You _could_ achieve the same result by returning a string, but it would be necessary to encode each querystring value using `encodeURIComponent` to prevent generating a malformed URL.
+
+## Specifying scrapers
+
+Once you have defined what URL to fetch HTML from, the other required step in defining a page is to specify how to parse information from the returned HTML.
+
+You can specify the scraper function to use for a page by passing it as the `scrape` prop in the first argument:
+
+```ts
+const blogPostPage = page({
+  url: ({ postId }) => `https://imaginary.blog/posts/${postId}`,
+  scrape: (domRoot) => {
+    // ... magic happens here ...
+    return scrapedData
+  }
+})
+```
+
+You can read more about scrapers in the [next page](./scraper)

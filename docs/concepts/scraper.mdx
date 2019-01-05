@@ -1,0 +1,200 @@
+---
+name: Scraper
+route: /concepts/scraper
+menu: Concepts
+---
+
+# Scrapers
+
+A **scraper** is a function which takes a [cheerio](https://npm.im/cheerio) DOM node, and returns some sort of data.
+
+You are free to define this function in whatever way you like. A simplistic example of this might look like:
+
+```ts
+const blogPostScraper = $ => ({
+  title: $('main h1').text(),
+  body: $('main article').text(),
+  likes: parseInt($('main .likes').text(), 10)
+})
+```
+
+## Built-in Scrapers
+
+Because writing scrapers like this can become repetitive, scrapegoat provides a number of built-in scraper factories for handling common actions.
+These scraper factories are functions which return a scraper.
+
+For example, the previous scraper could be redefined using scraper factories, like this:
+
+```ts
+import { section, text, int } from 'scrapegoat'
+
+const blogPostScraper = section('main', {
+  title: text('h1'),
+  body: text('article'),
+  likes: int('.likes')
+})
+```
+
+All built-in scraper factories take a selector as their first argument.
+If this selector is specified as `null`, then whatever node is passed in will be used.
+
+This approach of using factories to declare scrapers allows you to focus on extracting data, rather than implementing the same code over and over.
+
+### Reading the inner text of a node
+
+The `text` method is a scraper which returns the inner text of the selected node:
+
+```ts
+const titleScraper = text('h1')
+```
+
+By default, it will trim any leading/trailing whitespace. This behaviour can be disabled by passing `false` as the second argument.
+
+### Reading an integer
+
+The `int` method is a combination of the `text` scraper, and `parseInt`.
+
+```ts
+const likesScraper = int('.likes')
+```
+
+By default, `int` assumes you are parsing a base 10 number; to override this, you may pass the radix as a second argument:
+
+```ts
+// Parse a hexadecimal integer
+const hashScraper = int('.hash', 16)
+```
+
+### Reading from a node's attribute
+
+The `attr` method will read a named attribute from a node.
+
+```ts
+const urlScraper = attr('h1 a', 'href')
+```
+
+### Reading data from link URLs
+
+Often, you may want to extract an ID or other part of a URL from a link in the page.
+The `url` method extracts the `href` of a given node, and parses it using node.js's `url.parse` method.
+The parsed URL object is passed to a transform method that you must specify.
+
+```ts
+const idScraper = url('h1 a', url => url.query.id)
+```
+
+## Higher-order Scrapers
+
+Sometimes, it is useful to be able to combine scrapers to handle nodes in the page which represent complex data (i.e. arrays and objects, rather than just strings and numbers).
+
+To assist this, scrapegoat has a set of scraper factories for these scenarios.
+
+### Scraping an object from a node
+
+In the blog post example we saw at the start, we wanted our scraper to return an object containing the title, body and number of likes for a given blog post.
+In order to achieve this, we used the `section` scraper factory.
+
+The `section` method returns a scraper that finds a specific node, and returns an object using a mapping of keys to scrapers.
+Each of these _child_ scrapers is called with the node specified by the selector, in order to return an object of the same shape. 
+
+This is better expressed by example:
+
+```ts
+const blogPostScraper = section('article.blog-post', {
+  title: text('h1'),
+  body: text('.blog-post-body'),
+  likes: int('.likes')
+})
+```
+
+It is possible to nest whatever scraper you like inside the second argument passed to `section`, so you can build up complex objects quickly:
+
+```ts
+const blogPostScraper = section('article.blog-post', {
+  title: text('h1'),
+  // .. rest as before ..
+
+  author: section('.about-author', {
+    name: text('h2'),
+    avatar: attr('.avatar img', 'src'),
+    links: section('.links', {
+      blog: text('.blog'),
+      twitter: text('.twitter')
+    })
+  })
+})
+```
+
+### Scraping data from a list of nodes
+
+When you need to scrape an array of data from a list of nodes, the `list` method will come to the rescue.
+
+The `list` method is a scraper factory, returning a scraper which behaves a lot like `Array.map`. It accepts a selector and a scraper function, and returns the result of mapping that scraper over every node matching that selector.
+
+```ts
+const categoriesScraper = list('ul.categories', text('li'))
+```
+
+### Scraping data from a fixed-order tuple of nodes
+
+Often, website authors aren't expecting their site to be scraped, and as such don't add enough attributes to their DOM nodes to make them easily selectable.
+
+However, in the case that you are selecting data from an array of DOM nodes **with a fixed length and ordering**, the `tuple` method has your back.
+
+The `tuple` method is tricky to explain in words, and best explained by example.
+Given a DOM structure like this:
+
+```html
+<div class="user-details">
+  <span>Jim</span>
+  <span>29</span>
+  <span>United Kingdom</span>
+</div>
+```
+
+we can use `tuple` to extract an object with `name`, `age` and `country` attributes, like so: 
+
+```ts
+const userDetailsScraper = tuple('.user-details span', [
+  { name: text() },
+  { age: int() },
+  { country: text() }
+])
+```
+
+Calling this scraper with the above DOM would return:
+
+```js
+{
+  name: 'Jim',
+  age: 29,
+  country: 'United Kingdom'
+}
+```
+
+### Scraping data from tables
+
+Given an HTML table with a fixed (known) set of columns and a variable number of rows, the `table` method can be used to scrape an array of objects from it.
+
+Assuming you have a table:
+
+```html
+<table id="users">
+  <thead>
+    <tr><th>Name</th><th>Age</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Jim</td><td>29</td></tr>
+    <tr><td>AJ</td><td>31</td></tr>
+  </tbody>
+</table>
+```
+
+You can define a scraper for the rows of that table as follows:
+
+```ts
+const usersTableScraper = table('#users', [
+  { name: text() },
+  { age: int() }
+])
+```

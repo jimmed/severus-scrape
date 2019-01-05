@@ -1,17 +1,7 @@
 import { basename } from "path";
 import { UrlWithParsedQuery } from "url";
 import { parse as parseDate } from "date-fns";
-import {
-  page,
-  section,
-  int,
-  list,
-  tuple,
-  exists,
-  url,
-  text,
-  attr
-} from "../../src/";
+import { page, section, int, table, exists, url, text, attr } from "../../src/";
 
 export type Args = {
   query: string;
@@ -52,17 +42,14 @@ export const coasterSearchPage = page<Args, Results>({
   }),
   scrape: section<Results>("main section", {
     total: int(".t-top tbody tr:nth-child(1) td:nth-child(3)"),
-    results: list(
-      "#report tbody tr",
-      tuple<Result>("td", [
-        { hasPhotos: exists("a") },
-        { id: url("a", idFromUrl), name: text("a") },
-        { parkId: url("a", idFromUrl), park: text("a") },
-        { typeId: url("a", idFromQuery), type: text("a") },
-        { designId: url("a", idFromQuery), design: text("a") },
-        { statusId: url("a", idFromQuery), status: text("a") },
-        { opened: attr("time", "datetime", parseDate) }
-      ])
-    )
+    results: table<Result>("#report", [
+      { hasPhotos: exists("a") },
+      { id: url("a", idFromUrl), name: text("a") },
+      { parkId: url("a", idFromUrl), park: text("a") },
+      { typeId: url("a", idFromQuery), type: text("a") },
+      { designId: url("a", idFromQuery), design: text("a") },
+      { statusId: url("a", idFromQuery), status: text("a") },
+      { opened: attr("time", "datetime", parseDate) }
+    ])
   })
 });
