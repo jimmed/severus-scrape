@@ -6,15 +6,15 @@ menu: Concepts
 
 # Scrapers
 
-A **scraper** is a function which takes a [cheerio](https://npm.im/cheerio) DOM node, and returns some sort of data.
+A **scraper** is a function which takes an [HTML element](https://npm.im/fast-html-parser), and returns some sort of data.
 
 You are free to define this function in whatever way you like. A simplistic example of this might look like:
 
 ```ts
-const blogPostScraper = $ => ({
-  title: $("main h1").text(),
-  body: $("main article").text(),
-  likes: parseInt($("main .likes").text(), 10),
+const blogPostScraper = dom => ({
+  title: dom.querySelector("main h1").text,
+  body: dom.querySelector("main article").text,
+  likes: parseInt(dom.querySelector("main .likes").text, 10),
 });
 ```
 
