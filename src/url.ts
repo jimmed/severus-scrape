@@ -14,7 +14,7 @@ export const urlFactoryFromObject = (object: Url) => {
   return () => url;
 };
 
-export const urlFactory = <A>(
+export const urlFactory = <A = undefined>(
   url: string | Url | ((args: A) => string | Url)
 ) => {
   switch (typeof url) {
