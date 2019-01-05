@@ -1,14 +1,16 @@
 {
   "name": "severus-scrape",
   "version": "0.1.0-alpha.0",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "author": "Jim O'Brien <jim@jimmed.net>",
   "license": "MIT",
   "scripts": {
     "test": "jest",
     "build": "tsc",
     "docs": "docz",
-    "now-build": "yarn docs build"
+    "now-build": "yarn docs build",
+    "prepublishOnly": "yarn build"
   },
   "devDependencies": {
     "@types/cheerio": "^0.22.10",
