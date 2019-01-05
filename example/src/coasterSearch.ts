@@ -1,7 +1,16 @@
 import { basename } from "path";
 import { UrlWithParsedQuery } from "url";
 import { parse as parseDate } from "date-fns";
-import { page, section, int, table, exists, url, text, attr } from "../../src/";
+import {
+  page,
+  section,
+  int,
+  table,
+  exists,
+  url,
+  text,
+  attr
+} from "severus-scrape";
 
 export type Args = {
   query: string;

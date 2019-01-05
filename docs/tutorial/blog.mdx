@@ -6,7 +6,7 @@ menu: Tutorials
 
 # Tutorial: Creating a Blog Scraper
 
-In this tutorial, we are going to use scrapegoat to create a scraper for an imaginary blog.
+In this tutorial, we are going to use Severus Scrape to create a scraper for an imaginary blog.
 
 ## The Imaginary Blog
 
@@ -68,10 +68,10 @@ cd blog-scraper
 npm init --yes
 ```
 
-2. Install scrapegoat:
+2. Install Severus Scrape:
 
 ```bash
-npm install scrapegoat
+npm install severus-scrape
 ```
 
 ### Define some constants
@@ -84,21 +84,21 @@ Therefore, we're going to create `constants.js` to store the base URL for our bl
 // constants.js
 export const BASE_URL = {
   protocol: "https",
-  hostname: "imaginary.blog"
+  hostname: "imaginary.blog",
 };
 ```
 
-We could just as well defined this as a string, `https://imaginary.blog`, but scrapegoat will accept URLs in the form of strings, or objects as returned by node.js's [url.parse](https://nodejs.org/api/url.html#url_url_parse_urlstring_parsequerystring_slashesdenotehost) method
+We could just as well defined this as a string, `https://imaginary.blog`, but Severus Scrape will accept URLs in the form of strings, or objects as returned by node.js's [url.parse](https://nodejs.org/api/url.html#url_url_parse_urlstring_parsequerystring_slashesdenotehost) method
 
 ### Define the index page scraper
 
 The first page we're going to define is for the index page. We'll be working in `indexPage.js`
 
-First off, we need to import some things from scrapegoat - we'll talk about what they do later, when we come to use them.
+First off, we need to import some things from Severus Scrape - we'll talk about what they do later, when we come to use them.
 We're also going to import the base URL constant we defined a moment ago.
 
 ```js
-import { page, list, section, url, text } from "scrapegoat";
+import { page, list, section, url, text } from "severus-scrape";
 import { BASE_URL } from "./constants";
 ```
 
@@ -118,7 +118,7 @@ We can specify how to build the URL by passing a `url` property:
 
 ```js
 export const indexPage = page({
-  url: BASE_URL
+  url: BASE_URL,
 });
 ```
 
@@ -129,7 +129,7 @@ Static URLs can be specified either as a string, or as a URL object.
 
 Now that we've specified where to find the page we're scraping, we need to specify _how_ to scrape it.
 
-To make this as simple as possible, scrapegoat provides a wide set of **scrapers**. Scrapers are functions which take a Cheerio DOM node and return some data.
+To make this as simple as possible, Severus Scrape provides a wide set of **scrapers**. Scrapers are functions which take a Cheerio DOM node and return some data.
 
 We want to define a scraper for the index page that will return an array of objects which looks like:
 
@@ -138,8 +138,8 @@ We want to define a scraper for the index page that will return an array of obje
   {
     id: 2,
     title: "The most recent post",
-    summary: "A short summary of the blog post"
-  }
+    summary: "A short summary of the blog post",
+  },
 ];
 ```
 
@@ -153,13 +153,13 @@ export const indexPage = page({
     section(null, {
       id: url("header h2 a", getIdFromPostUrl),
       title: text("header h2 a"),
-      summary: text("article")
+      summary: text("article"),
     })
-  )
+  ),
 });
 ```
 
-In this example, `list`, `section`, `url` and `text` are all scrapers provided as part of scrapegoat.
+In this example, `list`, `section`, `url` and `text` are all scrapers provided as part of Severus Scrape.
 All of them take a DOM (CSS-style) selector, and some additional parameters, allowing you to declare most scrapers without writing any DOM manipulation code.
 
 Those with a keen eye may have noticed the reference to `getIdFromPostUrl`, a function that we haven't defined yet.
@@ -182,7 +182,7 @@ const getIdFromPostUrl = ({ routename }) => {
 Putting it all together, we should get something like this:
 
 ```js
-import { page, list, section, url, text } from "scrapegoat";
+import { page, list, section, url, text } from "severus-scrape";
 
 const BASE_URL = `https://imaginary.blog`;
 
@@ -198,9 +198,9 @@ export const indexPage = page({
     section(null, {
       id: url("header h2 a", getIdFromPostUrl),
       title: text("header h2 a"),
-      summary: text("article")
+      summary: text("article"),
     })
-  )
+  ),
 });
 ```
 
@@ -237,8 +237,8 @@ Because the post pages have a URL based on the blog post's ID, we will need to d
 export const postPage = page({
   url: ({ postId }) => ({
     ...BASE_URL,
-    routename: `/posts/${postId}`
-  })
+    routename: `/posts/${postId}`,
+  }),
 });
 ```
 
