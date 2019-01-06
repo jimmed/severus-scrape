@@ -209,7 +209,7 @@ We can now call our scraper by importing it from another file, and calling it:
 ```js
 import { indexPage } from "./indexPage";
 
-indexPage.resolve().then(console.log, console.error);
+indexPage.scrape().then(console.log, console.error);
 
 /* Logs:
 [
@@ -271,8 +271,8 @@ All that remains to be done is write a small module to expose the scrapers to th
 import { indexPage } from "./indexPage";
 import { postPage } from "./postPage";
 
-export const getIndex = () => indexPage.resolve();
-export const getPost = postId => postPage.resolve({ postId });
+export const getIndex = () => indexPage.scrape();
+export const getPost = postId => postPage.scrape({ postId });
 ```
 
 Oh, and don't forget to write some documentation too!
