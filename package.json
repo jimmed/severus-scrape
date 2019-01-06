@@ -33,6 +33,7 @@
     "lodash": "^4.17.11",
     "node-fetch": "^2.3.0"
   },
+  "files": ["lib", "yarn.lock"],
   "husky": {
     "hooks": {
       "pre-commit": "yarn test",
