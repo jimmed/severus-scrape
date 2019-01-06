@@ -5,6 +5,7 @@
   "types": "lib/index.d.ts",
   "author": "Jim O'Brien <jim@jimmed.net>",
   "license": "MIT",
+  "keywords": ["scraper", "html"],
   "scripts": {
     "test": "jest",
     "build": "tsc",

@@ -6,6 +6,6 @@
     "types": ["@types/node", "@types/jest"],
     "declaration": true
   },
-  "exclude": ["node_modules", "**/node_modules/*", "*.test.ts"],
-  "include": ["src"]
+  "exclude": ["node_modules", "**/node_modules/*", "*.test.ts", "**/__tests__/*"],
+  "include": ["src/**/*.ts"]
 }
