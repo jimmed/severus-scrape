@@ -37,10 +37,10 @@ export const blogPostPage = page<Args, BlogPost>({
 })
 ```
 
-The returned object, `blogPostPage`, has a `resolve` method, which will fetch a blog post by ID.
+The returned object, `blogPostPage`, has a `scrape` method, which will fetch a blog post by ID.
 
 ```ts
-const blogPost = await blogPostPage.resolve({ postId: "some-cool-post" });
+const blogPost = await blogPostPage.scrape({ postId: "some-cool-post" });
 console.log(blogPost);
 ```
 
