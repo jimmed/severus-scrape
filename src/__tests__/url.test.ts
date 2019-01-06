@@ -3,7 +3,7 @@ import {
   urlFactoryFromString,
   urlFactoryFromObject,
   urlFactoryFromFunction
-} from "./url";
+} from "../url";
 
 const mockUrl = () =>
   Object.freeze({ protocol: "https", hostname: "test", pathname: "path" });
